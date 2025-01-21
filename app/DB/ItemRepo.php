@@ -6,17 +6,13 @@ use App\Models\Item;
 
 class ItemRepo
 {
-    public function save($order, $basket)
+    public function save($order, $item)
     {
-        if ($basket) {
-            foreach ($basket as $item) {
-                Item::create([
-                    'name' => $item['name'],
-                    'type' => $item['type'],
-                    'price' => $item['price'],
-                    'order_id' => $order->id
-                ]);
-            }
-        }
+        Item::create([
+            'name' => $item['name'],
+            'type' => $item['type'],
+            'price' => $item['price'],
+            'order_id' => $order->id
+        ]);
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use Throwable;
 
 class OrderController extends Controller
 {
@@ -26,22 +27,27 @@ class OrderController extends Controller
             return response(['errors' => $validator->errors()->all()], 422);
         }
 
-        $order = $orderRepo->save($request);
+        try {
 
-        if ($request['basket']) {
-            foreach ($request['basket'] as $item) {
+            $order = $orderRepo->save($request);
 
-                $itemRepo->save($order, $item);
+            if ($request['basket']) {
+                foreach ($request['basket'] as $item) {
 
-                if ($item['type'] == 'subscription') {
+                    $itemRepo->save($order, $item);
 
-                    dispatch(new SubscriptionJob($item));
+                    if ($item['type'] == 'subscription') {
+
+                        dispatch(new SubscriptionJob($item));
+                    }
                 }
             }
+
+            return response($order, 201);
+        } catch (Throwable $e) {
+            Log::error([$e]);
+            return response(['error' => 'bad_request'], 400);
         }
-
-
-        return $order;
     }
 
     public function fetch()
